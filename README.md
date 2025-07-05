@@ -37,7 +37,7 @@ IPL-EDA-SQL-Project/
 ├── IPL-Datasets/ # Cleaned Excel → Sample CSV sheets
 ├── SQL/ # All 70+ Queries in organized .sql files
 ├── Outputs/ # CSV outputs from queries
-├── Visuals/ # Visualizations (Working-On)
+├── Visuals/ # Visualizations (Coming-Soon)
 └── README.md
 ```
 
