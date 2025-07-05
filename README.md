@@ -60,6 +60,7 @@ IPL-EDA-SQL-Project/
 
 ```sql
 -- Top 10 Batters with Highest Runs
+
 SELECT
     batter_name as "Batter Name",
     SUM(runs_scored) AS "Total Runs"
