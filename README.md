@@ -60,10 +60,12 @@ IPL-EDA-SQL-Project/
 
 ```sql
 -- Top 10 Batters with Highest Runs
-SELECT batter_name, SUM(runs_scored) AS total_runs
+SELECT
+    batter_name as "Batter Name",
+    SUM(runs_scored) AS "Total Runs"
 FROM ipl_batters
-GROUP BY batter_name
-ORDER BY total_runs DESC
+GROUP BY "Batter Name"
+ORDER BY "Total Runs" DESC
 LIMIT 10;
 ```
 
