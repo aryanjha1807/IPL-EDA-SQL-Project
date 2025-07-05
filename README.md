@@ -10,9 +10,9 @@ The dataset was manually curated from scratch using Web-Scraping & Manual Data E
 
 ## 🛠️ Tools Used
 
-**PostgreSQL** – Querying and data analysis
-**Excel** – Data collection and preprocessing
-**Python** – For importing Excel into PostgreSQL
+**PostgreSQL** – Querying and data analysis  
+**Excel** – Data collection and preprocessing  
+**Python** – For importing Excel into PostgreSQL  
 **VS Code** – Query writing and Markdown reporting
 
 ---
