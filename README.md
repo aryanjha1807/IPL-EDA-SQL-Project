@@ -72,8 +72,8 @@ LIMIT 10;
 * Teams winning Toss, Won the Match **{58%}** of the Times
 * Sai Sudharsan leads leads the Top Run-Scorer list with **{759-Runs}**
 * Prasidh Krishna picked leads the Top Wicket-Taker list with **{25-Wickets}**
-* Bowling First Team had **{52%}** Winning Rate comparatively Batting First which had **{48%}** Winning Rate.
-* This IPL-2025 Recorded the Highest Aggregated Score by Sunrisers Hyderabad (SRH) **{286}** *[SRH v/s PBKS in Match-2]*
+* Bowling First Team had **52%** Win Rate comparatively Batting First which had **48%** Win Rate.
+* IPL-2025 Recorded the Highest Score by Sunrisers Hyderabad (SRH) **{286}** *[SRH v/s PBKS in Match-2]*
 * Mumbai Indians has had the Least Economy Rate Throughout Season **{8.87}**
 
 ➡️ And Many More Exciting Results & Analysis available inside the /Outputs/ folder.
@@ -82,10 +82,7 @@ LIMIT 10;
 
 ## ✍️ Author
 Name: Aryan Jha
-
-[Mail]aryanjhavsp0802@gmail.com  
-[YouTube](https://youtube.com/@ProgramWithAryan)  
-[LinkedIn](https://linkedin.com/in/aryan-jha-50b12329b)  
+[Mail](aryanjhavsp0802@gmail.com) [YouTube](https://youtube.com/@ProgramWithAryan) [LinkedIn](https://linkedin.com/in/aryan-jha-50b12329b)
 
 ## License
 This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
