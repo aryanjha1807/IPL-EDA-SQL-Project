@@ -1,2 +1,5 @@
+# Ignore the Outputs-CSVs folder
 Outputs-CSVs/
-IPL-Dataset/MainSheets-SampleFiles/SuperOverSheet.csv/
+
+# Ignore the SuperOverSheet.csv file
+IPL-Dataset/MainSheets-SampleFiles/SuperOverSheet.csv
