@@ -31,6 +31,7 @@ The dataset was manually curated from scratch using Web-Scraping & Manual Data E
 
 ## 🗃️ Folder Structure
 
+```
 IPL-EDA-SQL-Project/
 │
 ├── IPL-Datasets/ # Cleaned Excel → Sample CSV sheets
@@ -38,6 +39,7 @@ IPL-EDA-SQL-Project/
 ├── Outputs/ # CSV outputs from queries
 ├── Visuals/ # Visualizations (Working-On)
 └── README.md
+```
 
 ---
 
@@ -82,7 +84,7 @@ LIMIT 10;
 
 ## ✍️ Author
 Name: Aryan Jha  
-[Mail](aryanjhavsp0802@gmail.com) [YouTube](https://youtube.com/@ProgramWithAryan) [LinkedIn](https://linkedin.com/in/aryan-jha-50b12329b)
+[Mail](aryanjhavsp0802@gmail.com) [LinkedIn](https://linkedin.com/in/aryan-jha-50b12329b) [YouTube](https://youtube.com/@ProgramWithAryan)  
 
 ## License
 This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
