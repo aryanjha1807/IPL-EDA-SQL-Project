@@ -43,7 +43,6 @@ IPL-EDA-SQL-Project/
 
 ## 📁 Datasets Included
 
--------------------------------------------------------------
 | File                   | Description                      |
 |------------------------|----------------------------------|
 | `IPL_MainSheet.csv`    | Match-wise summary of 74 matches |
@@ -52,7 +51,6 @@ IPL-EDA-SQL-Project/
 | `IPL_Partnerships.csv` | Partnerships in each innings     |
 | `IPL_Overwise.csv`     | Over-by-over score data          |
 | `Teamwise_*.csv`       | Team-specific breakdowns         |
--------------------------------------------------------------
 
 ---
 
@@ -84,9 +82,10 @@ LIMIT 10;
 
 ## ✍️ Author
 Name: Aryan Jha
-[Mail]: aryanjhavsp0802@gmail.com
-[YouTube]: (youtube.com/@ProgramWithAryan)
-[LinkedIn]: (https://linkedin.com/in/aryan-jha-50b12329b)
+
+[Mail]aryanjhavsp0802@gmail.com  
+[YouTube](https://youtube.com/@ProgramWithAryan)  
+[LinkedIn](https://linkedin.com/in/aryan-jha-50b12329b)  
 
 ## License
 This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
