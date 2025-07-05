@@ -81,7 +81,7 @@ LIMIT 10;
 ---
 
 ## ✍️ Author
-Name: Aryan Jha
+Name: Aryan Jha  
 [Mail](aryanjhavsp0802@gmail.com) [YouTube](https://youtube.com/@ProgramWithAryan) [LinkedIn](https://linkedin.com/in/aryan-jha-50b12329b)
 
 ## License
