@@ -2,13 +2,10 @@
 Outputs-CSVs/
 
 # Ignore Un-formatted Outputs
-IPL-Dataset/Outputs/
+Outputs/
 
 # Ignore the SuperOverSheet.csv file
 IPL-Dataset/MainSheets-SampleFiles/SuperOverSheet.csv
 
 # Ignore Automated Python Program
-.AutoWriteReadme.py
-
-# Ignore sample readme file
-.ipl-readme.md
+AutoWriteReadme.py
