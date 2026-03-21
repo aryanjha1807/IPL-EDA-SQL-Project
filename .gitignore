@@ -8,7 +8,7 @@ IPL-Dataset/Outputs/
 IPL-Dataset/MainSheets-SampleFiles/SuperOverSheet.csv
 
 # Ignore Automated Python Program
-IPL-Dataset/AutoWriteReadme.py
+.AutoWriteReadme.py
 
 # Ignore sample readme file
-IPL-Dataset/ipl-readme.md
+.ipl-readme.md
