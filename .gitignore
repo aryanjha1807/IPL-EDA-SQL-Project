@@ -1,5 +1,14 @@
 # Ignore the Outputs-CSVs folder
 Outputs-CSVs/
 
+# Ignore Un-formatted Outputs
+IPL-Dataset/Outputs/
+
 # Ignore the SuperOverSheet.csv file
 IPL-Dataset/MainSheets-SampleFiles/SuperOverSheet.csv
+
+# Ignore Automated Python Program
+IPL-Dataset/AutoWriteReadme.py
+
+# Ignore sample readme file
+IPL-Dataset/ipl-readme.md

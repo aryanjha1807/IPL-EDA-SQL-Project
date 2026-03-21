@@ -1,5 +1,12 @@
 # 🏏 IPL 2025 SQL-Based Exploratory Data Analysis (EDA)
 
+## 💡 Contribute an IPL Insight
+
+Have an IPL question or idea in mind?  
+If you feel it’s not covered here, just share it, no need to worry about duplicates or whether it already exists. I’ll take care of reviewing, refining, and adding relevant insights to the project and doing this, you will be mentioned with credits tagged as a contributor.
+
+👉 [Submit Your Insight Here](https://forms.gle/LiQ16RoApnKGjJbM9)
+
 ## 📌 Project Overview
 
 This project involves a comprehensive exploratory analysis of the **IPL 2025 Season**, covering match-level, team-level, and player-level performance through **70+ unique SQL queries**.
