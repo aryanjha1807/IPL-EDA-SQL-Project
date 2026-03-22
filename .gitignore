@@ -9,3 +9,7 @@ IPL-Dataset/MainSheets-SampleFiles/SuperOverSheet.csv
 
 # Ignore Automated Python Program
 AutoWriteReadme.py
+
+try-input/
+try-output/
+try-RemoveBG-Outputs/
