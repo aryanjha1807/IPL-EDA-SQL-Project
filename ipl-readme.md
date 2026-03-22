@@ -3201,7 +3201,7 @@ select
 
 </details><br>
 
-<img src="https://raw.githubusercontent.com/aryanjha1807/IPL-EDA-SQL-Project/main/Insights-and-Outputs/74.1-Top-5_Matches_With_Highest_Win_Margin_By_Runs.png" alt="74.1-Top-5_Matches_With_Highest_Win_Margin_By_Runs" height="230"/>
+<img src="https://raw.githubusercontent.com/aryanjha1807/IPL-EDA-SQL-Project/main/Insights-and-Outputs/74.1-Top-5_Matches_with_Highest_Win_Margin_By_Runs.png" alt="74.1-Top-5_Matches_With_Highest_Win_Margin_By_Runs"/>
 	
 ## 74.2) Top-5 Matches with Highest Win Margin (By Wickets)
 
@@ -3228,4 +3228,4 @@ select
 
 </details><br>
 
-<img src="https://raw.githubusercontent.com/aryanjha1807/IPL-EDA-SQL-Project/main/Insights-and-Outputs/74.2-Top-5_Matches_With_Highest_Win_Margin_By_Wickets.png" alt="74.2-Top-5_Matches_With_Highest_Win_Margin_By_Wickets" height="230"/>
+<img src="https://raw.githubusercontent.com/aryanjha1807/IPL-EDA-SQL-Project/main/Insights-and-Outputs/74.2-Top-5_Matches_with_Highest_Win_Margin_By_Wickets.png" alt="74.2-Top-5_Matches_With_Highest_Win_Margin_By_Wickets"/>
