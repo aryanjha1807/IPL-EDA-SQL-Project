@@ -2444,7 +2444,7 @@ select
 	economy as "Bowling Economy",
 	opp as "Winning Team"
 from combined_losing_cause_performances
-order by "Team", "Highest Runs Scored in Losing Cause" desc, "Wickets Taken in Losing Cause" desc
+order by "Highest Runs Scored in Losing Cause" desc, "Wickets Taken in Losing Cause" desc
 limit 10
 
 -- 74.1) Top-5 Matches with Highest Win Margin (By Runs)
