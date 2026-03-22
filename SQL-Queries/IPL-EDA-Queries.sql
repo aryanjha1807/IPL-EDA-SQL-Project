@@ -2444,5 +2444,37 @@ select
 	economy as "Bowling Economy",
 	opp as "Winning Team"
 from combined_losing_cause_performances
-order by "Highest Runs Scored in Losing Cause" desc, "Wickets Taken in Losing Cause" desc
+order by "Team", "Highest Runs Scored in Losing Cause" desc, "Wickets Taken in Losing Cause" desc
 limit 10
+
+-- 74.1) Top-5 Matches with Highest Win Margin (By Runs)
+
+select
+	"Match Number",
+	"Home Team",
+	"Away Team",
+	"Home Team Score",
+	"Away Team Score",
+	"Winning Team",
+	CONCAT("Winning Margin", ' Runs') as "Winning Margin (Runs)"
+	from ipl
+	where "Winning Category" not in ('-','_','Rain Interrupted (No Result)')
+			and "Winning Category" in ('Runs')
+	order by "Winning Margin" desc
+	limit 5
+	
+-- 74.2) Top-5 Matches with Highest Win Margin (By Wickets)
+
+select
+	"Match Number",
+	"Home Team",
+	"Away Team",
+	"Home Team Score",
+	"Away Team Score",
+	"Winning Team",
+	CONCAT("Winning Margin", ' Wickets') as "Winning Margin (Wickets)"
+	from ipl
+	where "Winning Category" not in ('-','_','Rain Interrupted (No Result)')
+			and "Winning Category" in ('Wickets')
+	order by "Winning Margin" desc
+	limit 5

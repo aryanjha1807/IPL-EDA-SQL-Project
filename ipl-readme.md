@@ -3175,3 +3175,57 @@ limit 10
 </details><br>
 
 <img src="https://raw.githubusercontent.com/aryanjha1807/IPL-EDA-SQL-Project/main/Insights-and-Outputs/73-Performances_in_Losing_Cause_Top-10.png" alt="73-Performances_in_Losing_Cause_Top-10" height="230"/>
+
+## 74.1) Top-5 Matches with Highest Win Margin (By Runs)?
+
+<details>
+  <summary>Show SQL Query</summary>
+
+```sql
+
+select
+	"Match Number",
+	"Home Team",
+	"Away Team",
+	"Home Team Score",
+	"Away Team Score",
+	"Winning Team",
+	CONCAT("Winning Margin", ' Runs') as "Winning Margin (Runs)"
+	from ipl
+	where "Winning Category" not in ('-','_','Rain Interrupted (No Result)')
+			and "Winning Category" in ('Runs')
+	order by "Winning Margin" desc
+	limit 5
+
+```
+
+</details><br>
+
+<img src="https://raw.githubusercontent.com/aryanjha1807/IPL-EDA-SQL-Project/main/Insights-and-Outputs/74.1-Top-5_Matches_With_Highest_Win_Margin_By_Runs.png" alt="74.1-Top-5_Matches_With_Highest_Win_Margin_By_Runs" height="230"/>
+	
+## 74.2) Top-5 Matches with Highest Win Margin (By Wickets)
+
+<details>
+  <summary>Show SQL Query</summary>
+
+```sql
+
+select
+	"Match Number",
+	"Home Team",
+	"Away Team",
+	"Home Team Score",
+	"Away Team Score",
+	"Winning Team",
+	CONCAT("Winning Margin", ' Wickets') as "Winning Margin (Wickets)"
+	from ipl
+	where "Winning Category" not in ('-','_','Rain Interrupted (No Result)')
+			and "Winning Category" in ('Wickets')
+	order by "Winning Margin" desc
+	limit 5
+
+```
+
+</details><br>
+
+<img src="https://raw.githubusercontent.com/aryanjha1807/IPL-EDA-SQL-Project/main/Insights-and-Outputs/74.2-Top-5_Matches_With_Highest_Win_Margin_By_Wickets.png" alt="74.2-Top-5_Matches_With_Highest_Win_Margin_By_Wickets" height="230"/>
