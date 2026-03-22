@@ -3174,7 +3174,7 @@ limit 10
 ```
 </details><br>
 
-<img src="https://raw.githubusercontent.com/aryanjha1807/IPL-EDA-SQL-Project/main/Insights-and-Outputs/73-Performances_in_Losing_Cause_Top-10.png" alt="73-Performances_in_Losing_Cause_Top-10" height="230"/>
+<img src="https://raw.githubusercontent.com/aryanjha1807/IPL-EDA-SQL-Project/main/Insights-and-Outputs/73-Performances_in_Losing_Cause_Top-10.png" alt="73-Performances_in_Losing_Cause_Top-10"/>
 
 ## 74.1) Top-5 Matches with Highest Win Margin (By Runs)?
 
