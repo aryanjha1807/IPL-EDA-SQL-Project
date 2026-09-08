@@ -129,7 +129,7 @@ with toss_the_boss as (
 	
 	from ipl
 	where "Toss Winner" notnull
-	and "Winning Team" NOT IN ('Rain Interruped (No Result)','Tie') and "Winning Team" notnull
+	and "Winning Team" NOT IN ('Rain Interrupted (No Result)','Tie') and "Winning Team" notnull
 
 )
 
@@ -226,56 +226,63 @@ order by toss_wins desc
 
 -- 9) What are the average scores when batting first vs second?
 
-with teams as (
-	select "Home Team" as team, "Match Number" as match_number from ipl union
-	select "Away Team" as team, "Match Number" as match_number from ipl
+with filtered_ipl as (
+    select *
+    from ipl
+    where "Home Team Score" > 0
+      and "Away Team Score" > 0
+      and "Winning Team" not in (
+          'Rain Interrupted (No Result)',
+          'Tie'
+      )
+      and "Winning Team" is not null
 ),
 
-filtered_ipl as (
-	select * from ipl
-	where "Home Team Score" > 0
-	and "Away Team Score" > 0
-	and "Winning Team" not in ('Rain Interrupted (No Result)','Tie')
-	and "Winning Team" notnull
-),
+scores as (
+    select
+        case
+            when "Toss Decision" = 'Bat First'
+                then cast(
+                    case
+                        when "Toss Winner" = "Home Team"
+                            then "Home Team Score"
+                        else "Away Team Score"
+                    end as integer
+                )
+            else cast(
+                    case
+                        when "Toss Winner" = "Home Team"
+                            then "Away Team Score"
+                        else "Home Team Score"
+                    end as integer
+                )
+        end as batting_first_score,
 
-average_scores as (
+        case
+            when "Toss Decision" = 'Bat First'
+                then cast(
+                    case
+                        when "Toss Winner" = "Home Team"
+                            then "Away Team Score"
+                        else "Home Team Score"
+                    end as integer
+                )
+            else cast(
+                    case
+                        when "Toss Winner" = "Home Team"
+                            then "Home Team Score"
+                        else "Away Team Score"
+                    end as integer
+                )
+        end as batting_second_score
 
-	select
-	
-	sum (case
-		 when team = "Toss Winner" and "Toss Decision" = 'Bat First' then cast("Home Team Score" as integer)
-		 when team != "Toss Winner" and "Toss Decision" = 'Bowl First' then cast("Away Team Score" as integer)
-		 else 0
-	end ) as batting_first_total,
-	
-	sum (case
-		 when team = "Toss Winner" and "Toss Decision" = 'Bat First' then 1
-		 when team != "Toss Winner" and "Toss Decision" = 'Bowl First' then 1
-		 else 0
-	end ) as batting_first_count,
-	
-	sum (case
-		 when team = "Toss Winner" and "Toss Decision" = 'Bowl First' then cast("Home Team Score" as integer)
-		 when team != "Toss Winner" and "Toss Decision" = 'Bat First' then cast("Away Team Score" as integer)
-		 else 0
-	end ) as batting_second_total,
-	
-	sum (case
-		 when team = "Toss Winner" and "Toss Decision" = 'Bowl First' then 1
-		 when team != "Toss Winner" and "Toss Decision" = 'Bat First' then 1
-		 else 0
-	end ) as batting_second_count
-	
-	from filtered_ipl
-	join teams on teams.match_number = "Match Number"
-
+    from filtered_ipl
 )
 
 select
-	round(batting_first_total*1.0/batting_first_count,2) as "Batting First Avg. Score",
-	round(batting_second_total/batting_second_count,2) as "Batting Second Avg. Score"
-from average_scores
+    round(avg(batting_first_score), 2) as "Batting First Avg. Score",
+    round(avg(batting_second_score), 2) as "Batting Second Avg. Score"
+from scores
 
 -- 10) What is the average run rate for each team?
 
@@ -288,9 +295,9 @@ with filtered_ipl as (
 ),
 
 teams as (
-	select "Home Team" as team, "Match Number" as match_number from ipl
+	select "Home Team" as team, "Match Number" as match_number from filtered_ipl
 		union
-	select "Away Team" as team, "Match Number" as match_number from ipl
+	select "Away Team" as team, "Match Number" as match_number from filtered_ipl
 ),
 
 run_rate_stats as (
@@ -336,9 +343,7 @@ order by "Average Run Rate" desc
 
 with filtered_ipl as (
 	select * from ipl
-	where "Home Team Wickets Fallen" > 0
-	and "Away Team Wickets Fallen" > 0
-	and "Winning Team" not in ('Rain Interrupted (No Result)','Tie')
+	where "Winning Team" not in ('Rain Interrupted (No Result)','Tie')
 	and "Winning Team" notnull
 ),
 
@@ -605,7 +610,12 @@ order by "Average Economy"
 
 -- 16) Who are the top 10 run scorers of the season?
 
-select "Batter Name", "Runs Scored", "Strike Rate" from "ipl-batters" where "Runs Scored" > 175 order by "Runs Scored" desc limit 10
+select
+	"Batter Name", "Runs Scored", "Strike Rate"
+from "ipl-batters"
+where "Runs Scored" > 175
+order by "Runs Scored" desc
+limit 10
 
 -- 17) What is the average strike rate of all right-handers vs left-handers?
 
@@ -663,7 +673,7 @@ select "Batter Name" as "Player Name", count(*) as "Not-Out Innings" from all_ba
 
 select "Batter Name", "Sixes" from "ipl-batters" order by "Sixes" desc limit 10
 
--- 23) Which batter has Scored 50+ with Highest Strike Rate?
+-- 23) Which batter has Scored with Highest Strike Rate having atleast 50+ runs in a single innings?
 
 WITH all_batters AS (
     SELECT * FROM "rcb-batters" UNION ALL
@@ -680,7 +690,7 @@ WITH all_batters AS (
 
 select "Batter Name", "Batter Type", "Runs Scored", round("Strike Rate"::numeric,2) as "Strike Rate" from all_batters where "Runs Scored" > 49 order by "Strike Rate" desc limit 10
 
--- 24) What’s the average contribution of top 3 batters per team?
+-- 24) What percentage of team runs were scored by the Top-3 batters?
 
 with 
 rcb_batters as ( select 'Royal Challengers Bengaluru' as team, sum(runs_scored) as top_3_total_runs from ( select "Batter Name" as "TOP-3 Contributors", sum("Runs Scored") as runs_scored from "rcb-batters" group by "Batter Name" order by runs_scored desc limit 3 ) as top3 ),
@@ -838,13 +848,15 @@ WITH all_bowlers AS (
 
 select 
 	upper(team) as "Team",
+	"Bowler Name",
 	"Opponent", "Bowler Hand",
 	"Bowler Type", "Overs Bowled",
 	"Wickets Taken", "Runs Conceeded" as "Runs Conceded",
 	round("Economy"::numeric,2) as "Economy"
 from all_bowlers
 where "Bowler Name" not in ('null')
-order by "Wickets Taken" desc limit 5
+order by "Wickets Taken" desc, "Runs Conceded" asc
+limit 5
 
 -- 35) Top-5 matches that had the highest combined score?
 
@@ -885,27 +897,21 @@ with f_ipl as (
 )
 
 select round(avg(nrr)::numeric,2) as "Average Run Rate" from (
-	select avg("Home Team Run Rate") as nrr from ipl union all
-	select avg("Away Team Run Rate") as nrr from ipl
+	select avg("Home Team Run Rate") as nrr from f_ipl union all
+	select avg("Away Team Run Rate") as nrr from f_ipl
 ) as avg_run_rate
 
 -- 38) What’s the average number of wickets fallen in a match?
 
-with f_ipl as (
-	select * from ipl
-	where "Home Team Wickets Fallen" > 0
-	and "Away Team Wickets Fallen" > 0
-)
-
-select avg(wickets_fallen) as "Average Wickets Fallen Per Match" from (
-	select avg("Home Team Wickets Fallen") as wickets_fallen from f_ipl union all
-	select avg("Away Team Wickets Fallen") as wickets_fallen from f_ipl
+select round(avg(wickets_fallen)::numeric, 2) as "Average Wickets Fallen Per Match" from (
+	select avg("Home Team Wickets Fallen") as wickets_fallen from ipl union all
+	select avg("Away Team Wickets Fallen") as wickets_fallen from ipl
 ) as avg_wickets_fallen_per_match
 
 -- 39) How many matches were won chasing a target above 180+?
 
 select count(*) as "Matches Won While Chasing Targets of 180+" from ipl
-where "Winning Category" = 'Wickets' and ( "Home Team Score" >= 180 or "Away Team Score" >= 180 )
+where "Winning Category" = 'Wickets' and ( "Home Team Score" >= 180 and "Away Team Score" >= 180 )
 
 -- 40) What is the distribution of winning margins (by runs vs wickets)?
 
@@ -918,17 +924,17 @@ combined as (
 )
 
 select * from combined
--- (Just to check how many matches had no result)
--- select * from ipl where "Winning Team" not in (select distinct("Home Team") from ipl)
+--# (Just to check how many matches had no result)
+--# select * from ipl where "Winning Team" not in (select distinct("Home Team") from ipl)
 
 -- 41) Which city saw the highest average score?
 
-select "Venue", round(avg(venue_avg)::numeric,2) as "Venue Average Scores" from (
-	select "Venue", avg("Home Team Score") as venue_avg from ipl group by "Venue" union all
-	select "Venue", avg("Away Team Score") as venue_avg from ipl group by "Venue"
-) as avg_venue_scores
-group by "Venue"
-order by "Venue Average Scores" desc
+select "City", round(avg(city_avg)::numeric,2) as "City Average Scores" from (
+	select "City", avg("Home Team Score") as city_avg from ipl group by "City" union all
+	select "City", avg("Away Team Score") as city_avg from ipl group by "City"
+) as avg_city_scores
+group by "City"
+order by "City Average Scores" desc
 
 -- 42) Which batting pair had the most number of 50+ partnerships [Top-10]?
 
@@ -997,7 +1003,7 @@ select
 ) as max_partnership_score
 group by player_1, player_2
 order by "Partnership Score" desc
-limit 10
+limit 5
 
 -- 44) What is the average partnership per wicket per team?
 
@@ -1249,9 +1255,11 @@ select
 	total_score as "Total Runs in Powerplay",
 	round((total_score/total_appearances)::numeric,2) as "Average Runs in Powerplay"
 from combined_powerplay
-order by "Average Runs in Powerplay" desc
+order by
+	"Total Runs in Powerplay" desc,
+	"Average Runs in Powerplay" desc
 
--- 48) Which team had the best 19th over stats across the season?
+-- 48) Which team had the best 19th over stats while batting across the season?
 
 with f_overwise as (
 	select * from "ipl-overwise" o
@@ -1347,12 +1355,12 @@ combined_deathovers as (
 select
 	team as "Team",
 	overs as "Total Overs Played",
-	matches as "Total Matches Played inclusive of (16-20 Overs)",
+	matches as "Matches inclusive of (16-20 Overs)",
 	runs_in_death as "Total Death Over Runs Scored",
 	round((runs_in_death/matches)::numeric,2) as "Average Runs in Death Overs",
 	round((runs_in_death/overs)::numeric,2) as "Net Run-Rate in Death Overs"
 from combined_deathovers
-order by "Average Runs in Death Overs" desc
+order by "Total Death Over Runs Scored" desc
 
 -- 50) What is the average runs scored per over across teams?
 
@@ -1403,10 +1411,20 @@ order by "Average Runs Per Over" desc
 
 -- 51) How many overs went for more than 20 runs?
 
+with filtered_ipl_overwise as (
+	select *
+	from "ipl-overwise" o
+	where exists (
+		select 1 from "ipl" i
+		where i."Home Team" = o."Home Team"
+		and i."Away Team" = o."Away Team"
+		and i."Winning Team" not in ('-','_','Rain Interrupted (No Result)')
+	)
+)
+
 select count(*) as "Number Of Overs Conceding Over 20+ Runs" 
-from "ipl-overwise"
-where "Home Team Runs Scored" > 20
-or "Away Team Runs Scored" > 20
+from filtered_ipl_overwise
+where ("Home Team Runs Scored" > 20) or ("Away Team Runs Scored" > 20)
 
 -- 52) How much did Impact players contribute Throughout Tournament and Team-Wise?
 
@@ -1624,7 +1642,7 @@ from ballunit
 group by team
 order by "Total Wickets" desc
 
--- 54) What is the win percentage in matches where the Impact Player contributed?
+-- 54) What percentage of matches were won when the winning team did not had an impact player substitution?
 
 with total_matches as (
 	select "Home Team" as team, count(*) as matches from ipl
@@ -1649,8 +1667,8 @@ won_by_impact as (
 
 select
 	sum(matches) as "Total Matches With Impact Players",
-	sum(won_by_impact.won) as "Total Won with Impact Substitution",
-	round((sum(won_by_impact.won)*100.0/sum(matches))::numeric,2) as "Winning Percentage with Impact Player"
+	sum(matches) - sum(won_by_impact.won) as "Total Won with Impact Substitution",
+	round(((sum(matches) - sum(won_by_impact.won)) * 100.0/sum(matches))::numeric,2) as "Winning Percentage with Impact Player"
 from total_matches
 join won_by_impact on won_by_impact.team = total_matches.team
 
@@ -1720,7 +1738,7 @@ order by "Impact-Substitutions Done" desc
 
 -- 57) What is the result of every head-to-head between specific team pairs?
 
--- CREATE EXTENSION IF NOT EXISTS tablefunc;
+--# CREATE EXTENSION IF NOT EXISTS tablefunc;
 
 SELECT * FROM crosstab(
 	
@@ -1765,7 +1783,7 @@ select
 group by "Team"
 order by "Win Percentage At Away Venues" desc
 
--- 59) What’s the Team's Win-Loss Record At their Home-Ground?
+-- 59) What is each team's win-loss record when designated as the home team at each venue?
 
 select
 	team as "Team",
@@ -1840,7 +1858,7 @@ with valid_ipl as (
 ),
 
 all_batters as (
-	select team, "Batter Name" as player, sum("Runs Scored") as runs from (
+	select team, "Batter Name" as player, sum("Runs Scored") as runs, avg("Strike Rate") as strike_rate from (
 		select 'rcb' as team, * from "rcb-batters" union all
 		select 'csk' as team, * from "csk-batters" union all
 		select 'kkr' as team, * from "kkr-batters" union all
@@ -1856,7 +1874,7 @@ all_batters as (
 ),
 
 all_bowlers as (
-	select team, "Bowler Name" as player, sum("Wickets Taken") as wickets from (
+	select team, "Bowler Name" as player, sum("Wickets Taken") as wickets, sum("Runs Conceeded") as runs_conceeded from (
 		select 'rcb' as team, * from "rcb-bowlers" union all
 		select 'csk' as team, * from "csk-bowlers" union all
 		select 'kkr' as team, * from "kkr-bowlers" union all
@@ -1884,7 +1902,7 @@ combined_total as (
 
 ranked_batters as (
 	select team, sum(runs) as runs from (
-		select team, player, runs, row_number() over (partition by team order by runs desc) as rn
+		select team, player, runs, row_number() over (partition by team order by runs desc, strike_rate desc) as rn
 		from all_batters 
 	) bat
 	where rn<6
@@ -1893,7 +1911,7 @@ ranked_batters as (
 
 ranked_bowlers as (
 	select team, sum(wickets) as wickets from (
-		select team, player, wickets, row_number() over (partition by team order by wickets desc) as rn
+		select team, player, wickets, row_number() over (partition by team order by wickets desc, runs_conceeded asc) as rn
 		from all_bowlers
 	) ball
 	where rn<6
@@ -1964,66 +1982,160 @@ order by "Batters with 30+ Runs in a Match" desc, "Bowlers with 2+ Wickets in a 
 -- 63) Which team relied on fewer players to win (i.e., low player spread but high result)?
 
 with valid_ipl as (
-	select * from ipl
-	where "Winning Team" not in ('Rain Interrupted (No Result)','Tie')
+    select *
+    from ipl
+    where "Winning Team" not in ('Rain Interrupted (No Result)', 'Tie')
 ),
 
-distinct_batters as (
-	select team, players from (
-		select 'Royal Challengers Bengaluru' as team, count(distinct "Batter Name") as players from "rcb-batters" union
-		select 'Kolkata Knight Riders', count(distinct "Batter Name") from "kkr-batters" union
-		select 'Mumbai Indians', count(distinct "Batter Name") from "mi-batters" union
-		select 'Rajasthan Royals', count(distinct "Batter Name") from "rr-batters" union
-		select 'Gujarat Titans', count(distinct "Batter Name") from "gt-batters" union
-		select 'Delhi Capitals', count(distinct "Batter Name") from "dc-batters" union
-		select 'Sunrisers Hyderabad', count(distinct "Batter Name") from "srh-batters" union
-		select 'Lucknow Super Giants', count(distinct "Batter Name") from "lsg-batters" union
-		select 'Chennai Super Kings', count(distinct "Batter Name") from "csk-batters" union
-		select 'Punjab Kings', count(distinct "Batter Name") from "pbks-batters"
-	) bat
-),
+all_players as (
+    select 'Royal Challengers Bengaluru' as team, "Batter Name" as player
+    from "rcb-batters"
 
-distinct_bowlers as (
-	select team, players from (
-		select 'Royal Challengers Bengaluru' as team, count(distinct "Bowler Name") as players from "rcb-bowlers" union
-		select 'Chennai Super Kings', count(distinct "Bowler Name") from "csk-bowlers" union
-		select 'Kolkata Knight Riders', count(distinct "Bowler Name") from "kkr-bowlers" union
-		select 'Mumbai Indians', count(distinct "Bowler Name") from "mi-bowlers" union
-		select 'Rajasthan Royals', count(distinct "Bowler Name") from "rr-bowlers" union
-		select 'Gujarat Titans', count(distinct "Bowler Name") from "gt-bowlers" union
-		select 'Delhi Capitals', count(distinct "Bowler Name") from "dc-bowlers" union
-		select 'Sunrisers Hyderabad' as team, count(distinct "Bowler Name") from "srh-bowlers" union
-		select 'Lucknow Super Giants', count(distinct "Bowler Name") from "lsg-bowlers" union
-		select 'Punjab Kings', count(distinct "Bowler Name") from "pbks-bowlers"
-	) ball
+    union
+
+    select 'Royal Challengers Bengaluru', "Bowler Name"
+    from "rcb-bowlers"
+
+    union
+
+    select 'Kolkata Knight Riders', "Batter Name"
+    from "kkr-batters"
+
+    union
+
+    select 'Kolkata Knight Riders', "Bowler Name"
+    from "kkr-bowlers"
+
+    union
+
+    select 'Mumbai Indians', "Batter Name"
+    from "mi-batters"
+
+    union
+
+    select 'Mumbai Indians', "Bowler Name"
+    from "mi-bowlers"
+
+    union
+
+    select 'Rajasthan Royals', "Batter Name"
+    from "rr-batters"
+
+    union
+
+    select 'Rajasthan Royals', "Bowler Name"
+    from "rr-bowlers"
+
+    union
+
+    select 'Gujarat Titans', "Batter Name"
+    from "gt-batters"
+
+    union
+
+    select 'Gujarat Titans', "Bowler Name"
+    from "gt-bowlers"
+
+    union
+
+    select 'Delhi Capitals', "Batter Name"
+    from "dc-batters"
+
+    union
+
+    select 'Delhi Capitals', "Bowler Name"
+    from "dc-bowlers"
+
+    union
+
+    select 'Sunrisers Hyderabad', "Batter Name"
+    from "srh-batters"
+
+    union
+
+    select 'Sunrisers Hyderabad', "Bowler Name"
+    from "srh-bowlers"
+
+    union
+
+    select 'Lucknow Super Giants', "Batter Name"
+    from "lsg-batters"
+
+    union
+
+    select 'Lucknow Super Giants', "Bowler Name"
+    from "lsg-bowlers"
+
+    union
+
+    select 'Chennai Super Kings', "Batter Name"
+    from "csk-batters"
+
+    union
+
+    select 'Chennai Super Kings', "Bowler Name"
+    from "csk-bowlers"
+
+    union
+
+    select 'Punjab Kings', "Batter Name"
+    from "pbks-batters"
+
+    union
+
+    select 'Punjab Kings', "Bowler Name"
+    from "pbks-bowlers"
 ),
 
 distinct_players as (
-	select bat.team, sum(bat.players+ball.players) as players from distinct_batters bat
-	join distinct_bowlers ball on bat.team = ball.team
-	group by bat.team
+    select
+        team,
+        count(distinct player) as players
+    from all_players
+    where player is not null
+      and player <> 'null'
+    group by team
 ),
 
 wins as (
-	select team, sum(wins) as wins from (
-		select "Home Team" as team, count(*) filter (where "Winning Team" = "Home Team") as wins from valid_ipl group by team union all
-		select "Away Team" as team, count(*) filter (where "Winning Team" = "Away Team") as wins from valid_ipl group by team
-	) winners
-	group by team
+    select
+        team,
+        sum(wins) as wins
+    from (
+        select
+            "Home Team" as team,
+            count(*) filter (
+                where "Winning Team" = "Home Team"
+            ) as wins
+        from valid_ipl
+        group by "Home Team"
+
+        union all
+
+        select
+            "Away Team" as team,
+            count(*) filter (
+                where "Winning Team" = "Away Team"
+            ) as wins
+        from valid_ipl
+        group by "Away Team"
+    ) winners
+    group by team
 )
 
 select
-	p.team as "Team",
-	p.players as "Total Players Played",
-	w.wins as "Total Wins"
+    p.team as "Team",
+    p.players as "Total Players Played",
+    w.wins as "Total Wins"
 from distinct_players p
-join wins w on w.team = p.team
-order by "Total Players Played", "Total Wins" desc
+join wins w
+    on w.team = p.team
+order by "Total Players Played", "Total Wins" desc;
 
--- 68) Which batter scored the most via "Third Man" region [Top-10]?
+-- 64) Which batter scored the most via "Third Man" region [Top-10]?
 select "Batter Name", "Third Man" as "Runs Scored at Third Man" from "ipl-batters" order by "Third Man" desc limit 10
 
--- 69) How many times did a player get out within 5 balls faced?
+-- 65) How many times did a player get out within 5 balls faced?
 
 with valid_ipl as (
 	select * from ipl
@@ -2062,7 +2174,7 @@ with valid_ipl as (
 		select "Match Number", "Team", "Opponent", "Winning Team" from lsg union all
 		select "Match Number", "Team", "Opponent", "Winning Team" from mi
 	) as combined_teams
-	where winning_team not in ('Rain Interrupted (No Result)')
+	where winning_team not in ('-', '_', 'Rain Interrupted (No Result)')
 ),
 
 teams as (
@@ -2104,20 +2216,20 @@ with valid_ipl as (
 ),
 
 teams_batting as (
-	select team, opponent, match_number, batter, runs_scored, count(*) as ducks from (
-		select 'Royal Challengers Bengaluru' as team, "Opponent" as opponent, "Match Number" as match_number, "Batter Name" as batter, "Runs Scored" as runs_scored from "rcb-batters" union all
-		select 'Chennai Super Kings', "Opponent", "Match Number", "Batter Name", "Runs Scored" from "csk-batters" union all
-		select 'Kolkata Knight Riders', "Opponent", "Match Number", "Batter Name", "Runs Scored" from "kkr-batters" union all
-		select 'Punjab Kings', "Opponent", "Match Number", "Batter Name", "Runs Scored" from "pbks-batters" union all
-		select 'Rajasthan Royals', "Opponent", "Match Number", "Batter Name", "Runs Scored" from "rr-batters" union all
-		select 'Gujarat Titans', "Opponent", "Match Number", "Batter Name", "Runs Scored" from "gt-batters" union all
-		select 'Delhi Capitals', "Opponent", "Match Number", "Batter Name", "Runs Scored" from "dc-batters" union all
-		select 'Sunrisers Hyderabad', "Opponent", "Match Number", "Batter Name", "Runs Scored" from "srh-batters" union all
-		select 'Lucknow Super Giants', "Opponent", "Match Number", "Batter Name", "Runs Scored" from "lsg-batters" union all
-		select 'Mumbai Indians', "Opponent", "Match Number", "Batter Name", "Runs Scored" from "mi-batters"
+	select team, opponent, match_number, batter, runs_scored, count(*) as ducks, status from (
+		select 'Royal Challengers Bengaluru' as team, "Opponent" as opponent, "Match Number" as match_number, "Batter Name" as batter, "Runs Scored" as runs_scored, "Status" as status from "rcb-batters" union all
+		select 'Chennai Super Kings', "Opponent", "Match Number", "Batter Name", "Runs Scored", "Status" from "csk-batters" union all
+		select 'Kolkata Knight Riders', "Opponent", "Match Number", "Batter Name", "Runs Scored", "Status" from "kkr-batters" union all
+		select 'Punjab Kings', "Opponent", "Match Number", "Batter Name", "Runs Scored", "Status" from "pbks-batters" union all
+		select 'Rajasthan Royals', "Opponent", "Match Number", "Batter Name", "Runs Scored", "Status" from "rr-batters" union all
+		select 'Gujarat Titans', "Opponent", "Match Number", "Batter Name", "Runs Scored", "Status" from "gt-batters" union all
+		select 'Delhi Capitals', "Opponent", "Match Number", "Batter Name", "Runs Scored", "Status" from "dc-batters" union all
+		select 'Sunrisers Hyderabad', "Opponent", "Match Number", "Batter Name", "Runs Scored", "Status" from "srh-batters" union all
+		select 'Lucknow Super Giants', "Opponent", "Match Number", "Batter Name", "Runs Scored", "Status" from "lsg-batters" union all
+		select 'Mumbai Indians', "Opponent", "Match Number", "Batter Name", "Runs Scored", "Status" from "mi-batters"
 	) as all_batting
-	where runs_scored = 0
-	group by team, opponent, match_number, batter, runs_scored
+	where runs_scored = 0 and Status != 'Not Out'
+	group by team, opponent, match_number, batter, runs_scored, status
 )
 
 select batter as "Batter", count(*) as "Ducks" from teams_batting bat
@@ -2132,7 +2244,7 @@ order by "Ducks" desc limit 10
 -- 68) How many matches had both teams scoring 170+?
 
 select count(*) as "Number of Times Both Teams Scoring 170+ Runs in a Match" from ipl
--- select "Match Number", "Home Team", "Away Team", "Home Team Score", "Away Team Score", "Winning Team" from ipl
+--# select "Match Number", "Home Team", "Away Team", "Home Team Score", "Away Team Score", "Winning Team" from ipl
 where "Home Team Score" >= 170 and "Away Team Score" >= 170 and "Winning Team" not in ('Rain Interrupted (No Result)')
 
 -- 69) Which batter had the widest distribution (scored in all regions) [Top-10]?
@@ -2197,7 +2309,7 @@ no_pp_wickets as (
 
 select team as "Team", no_wickets_in_pp as "Number of Matches with no Wickets in Powerplay" from no_pp_wickets order by no_wickets_in_pp desc
 
--- 71) Who were the Top-3 consistent players per team (bat or bowl)?
+-- 71) Who are the top 3 run-scorers and wicket-takers for each IPL team?
 
 with all_teams_batters as (
 	select team, batter, sum(runs_scored) as runs_scored, row_number() over (partition by team order by sum(runs_scored) desc) as rn from (
@@ -2320,7 +2432,7 @@ batters_comeback as (
 	where shb.runs_scored > fhb.runs_scored
 ),
 
---
+--#
 
 first_half_bowlers as (
 	select team, bowler, sum(wickets_taken) as wickets_taken from (
@@ -2374,78 +2486,210 @@ bowlers_comeback as (
 select * from batters_comeback order by "Team"
 select * from bowlers_comeback order by "Team"
 
--- 73) Who had given performances but in losing causes (Unfortunate Performers)?
+-- 73) Who had given performances but in losing causes (Unfortunate Performers) [Top-10 in both Batting & Bowling]?
 
-with valid_ipl as (
-	select match_number, team, opponent, batter, bowler from (
-		select "Match Number" as match_number, "Team" as team, "Opponent" as opponent, "RCB Best Batsman" as batter, "RCB Best Bowler" as bowler, "Winning Team" as winning_team from rcb union all
-		select "Match Number", "Team", "Opponent", "CSK Best Batsman", "CSK Best Bowler", "Winning Team" from csk union all
-		select "Match Number", "Team", "Opponent", "KKR Best Batsman", "KKR Best Bowler", "Winning Team" from kkr union all
-		select "Match Number", "Team", "Opponent", "PBKS Best Batsman", "PBKS Best Bowler", "Winning Team" from pbks union all
-		select "Match Number", "Team", "Opponent", "RR Best Batsman", "RR Best Bowler", "Winning Team" from rr union all
-		select "Match Number", "Team", "Opponent", "GT Best Batsman", "GT Best Bowler", "Winning Team" from gt union all
-		select "Match Number", "Team", "Opponent", "DC Best Batsman", "DC Best Bowler", "Winning Team" from dc union all
-		select "Match Number", "Team", "Opponent", "SRH Best Batsman", "SRH Best Bowler", "Winning Team" from srh union all
-		select "Match Number", "Team", "Opponent", "LSG Best Batsman", "LSG Best Bowler", "Winning Team" from lsg union all
-		select "Match Number", "Team", "Opponent", "MI Best Batsman", "MI Best Bowler", "Winning Team" from mi
-	) as valid_matches
-	where winning_team not in ('Rain Interrupted (No Result)','Tie')
-	and winning_team != team and batter notnull and bowler notnull
+with valid_matches as (
+    select
+        "Match Number" as match_number,
+        "Home Team" as home_team,
+        "Away Team" as away_team,
+        "Winning Team" as winning_team
+    from ipl
+    where "Winning Team" not in (
+        'Rain Interrupted (No Result)',
+        'Tie',
+        '-',
+        '_'
+    )
+    and "Winning Team" is not null
 ),
 
-all_teams_batting_performances as (
-	select batters.match_number as mn, i.team as team, i.opponent as opp, batters.batter as batter, batters.runs_scored as runs, strike_rate from (
-		select "Match Number" as match_number, "Batter Name" as batter, "Runs Scored" as runs_scored, round("Strike Rate"::numeric,2) as strike_rate from "rcb-batters" union all
-		select "Match Number", "Batter Name", "Runs Scored", round("Strike Rate"::numeric,2) from "csk-batters" union all
-		select "Match Number", "Batter Name", "Runs Scored", round("Strike Rate"::numeric,2) from "kkr-batters" union all
-		select "Match Number", "Batter Name", "Runs Scored", round("Strike Rate"::numeric,2) from "pbks-batters" union all
-		select "Match Number", "Batter Name", "Runs Scored", round("Strike Rate"::numeric,2) from "dc-batters" union all
-		select "Match Number", "Batter Name", "Runs Scored", round("Strike Rate"::numeric,2) from "gt-batters" union all
-		select "Match Number", "Batter Name", "Runs Scored", round("Strike Rate"::numeric,2) from "mi-batters" union all
-		select "Match Number", "Batter Name", "Runs Scored", round("Strike Rate"::numeric,2) from "srh-batters" union all
-		select "Match Number", "Batter Name", "Runs Scored", round("Strike Rate"::numeric,2) from "lsg-batters" union all
-		select "Match Number", "Batter Name", "Runs Scored", round("Strike Rate"::numeric,2) from "rr-batters"
-	) batters
-	join valid_ipl i on i.match_number = batters.match_number and i.batter = batters.batter
+all_batting_performances as (
+    select
+        'Royal Challengers Bengaluru' as team,
+        "Match Number" as match_number,
+        "Batter Name" as player,
+        "Runs Scored" as runs,
+        "Strike Rate" as strike_rate
+    from "rcb-batters"
+
+    union all
+    select 'Chennai Super Kings', "Match Number", "Batter Name",
+           "Runs Scored", "Strike Rate"
+    from "csk-batters"
+
+    union all
+    select 'Kolkata Knight Riders', "Match Number", "Batter Name",
+           "Runs Scored", "Strike Rate"
+    from "kkr-batters"
+
+    union all
+    select 'Punjab Kings', "Match Number", "Batter Name",
+           "Runs Scored", "Strike Rate"
+    from "pbks-batters"
+
+    union all
+    select 'Rajasthan Royals', "Match Number", "Batter Name",
+           "Runs Scored", "Strike Rate"
+    from "rr-batters"
+
+    union all
+    select 'Gujarat Titans', "Match Number", "Batter Name",
+           "Runs Scored", "Strike Rate"
+    from "gt-batters"
+
+    union all
+    select 'Delhi Capitals', "Match Number", "Batter Name",
+           "Runs Scored", "Strike Rate"
+    from "dc-batters"
+
+    union all
+    select 'Sunrisers Hyderabad', "Match Number", "Batter Name",
+           "Runs Scored", "Strike Rate"
+    from "srh-batters"
+
+    union all
+    select 'Lucknow Super Giants', "Match Number", "Batter Name",
+           "Runs Scored", "Strike Rate"
+    from "lsg-batters"
+
+    union all
+    select 'Mumbai Indians', "Match Number", "Batter Name",
+           "Runs Scored", "Strike Rate"
+    from "mi-batters"
 ),
 
-all_teams_bowling_performances as (
-	select bowlers.match_number as mn, i.team as team, i.opponent as opp, bowlers.bowler as bowler, bowlers.wickets_taken as wickets, economy from (
-		select "Match Number" as match_number, "Bowler Name" as bowler, "Wickets Taken" as wickets_taken, round("Economy"::numeric,2) as economy from "rcb-bowlers" union all
-		select "Match Number", "Bowler Name", "Wickets Taken", round("Economy"::numeric,2) from "csk-bowlers" union all
-		select "Match Number", "Bowler Name", "Wickets Taken", round("Economy"::numeric,2) from "kkr-bowlers" union all
-		select "Match Number", "Bowler Name", "Wickets Taken", round("Economy"::numeric,2) from "pbks-bowlers" union all
-		select "Match Number", "Bowler Name", "Wickets Taken", round("Economy"::numeric,2) from "dc-bowlers" union all
-		select "Match Number", "Bowler Name", "Wickets Taken", round("Economy"::numeric,2) from "gt-bowlers" union all
-		select "Match Number", "Bowler Name", "Wickets Taken", round("Economy"::numeric,2) from "mi-bowlers" union all
-		select "Match Number", "Bowler Name", "Wickets Taken", round("Economy"::numeric,2) from "srh-bowlers" union all
-		select "Match Number", "Bowler Name", "Wickets Taken", round("Economy"::numeric,2) from "lsg-bowlers" union all
-		select "Match Number", "Bowler Name", "Wickets Taken", round("Economy"::numeric,2) from "rr-bowlers"
-	) bowlers
-	join valid_ipl i on i.match_number = bowlers.match_number and i.bowler = bowlers.bowler
+all_bowling_performances as (
+    select
+        'Royal Challengers Bengaluru' as team,
+        "Match Number" as match_number,
+        "Bowler Name" as player,
+        "Wickets Taken" as wickets,
+        "Economy" as economy
+    from "rcb-bowlers"
+
+    union all
+    select 'Chennai Super Kings', "Match Number", "Bowler Name",
+           "Wickets Taken", "Economy"
+    from "csk-bowlers"
+
+    union all
+    select 'Kolkata Knight Riders', "Match Number", "Bowler Name",
+           "Wickets Taken", "Economy"
+    from "kkr-bowlers"
+
+    union all
+    select 'Punjab Kings', "Match Number", "Bowler Name",
+           "Wickets Taken", "Economy"
+    from "pbks-bowlers"
+
+    union all
+    select 'Rajasthan Royals', "Match Number", "Bowler Name",
+           "Wickets Taken", "Economy"
+    from "rr-bowlers"
+
+    union all
+    select 'Gujarat Titans', "Match Number", "Bowler Name",
+           "Wickets Taken", "Economy"
+    from "gt-bowlers"
+
+    union all
+    select 'Delhi Capitals', "Match Number", "Bowler Name",
+           "Wickets Taken", "Economy"
+    from "dc-bowlers"
+
+    union all
+    select 'Sunrisers Hyderabad', "Match Number", "Bowler Name",
+           "Wickets Taken", "Economy"
+    from "srh-bowlers"
+
+    union all
+    select 'Lucknow Super Giants', "Match Number", "Bowler Name",
+           "Wickets Taken", "Economy"
+    from "lsg-bowlers"
+
+    union all
+    select 'Mumbai Indians', "Match Number", "Bowler Name",
+           "Wickets Taken", "Economy"
+    from "mi-bowlers"
 ),
 
-combined_losing_cause_performances as (
-	select
-		bat.mn, bat.team as team, bat.opp as opp, bat.batter as batter, bat.runs as runs, bat.strike_rate as strike_rate,
-		ball.bowler as bowler, ball.wickets as wickets, ball.economy as economy
-	from all_teams_batting_performances bat
-	join all_teams_bowling_performances ball on bat.mn = ball.mn and bat.team = ball.team and bat.opp = ball.opp
+losing_batting_performances as (
+    select
+        b.match_number,
+        b.team,
+        b.player,
+        b.runs,
+        round(b.strike_rate::numeric, 2) as strike_rate,
+        m.winning_team
+    from all_batting_performances b
+    join valid_matches m
+        on m.match_number = b.match_number
+       and (
+            m.home_team = b.team
+            or m.away_team = b.team
+       )
+    where b.team <> m.winning_team
+      and b.player is not null
+      and b.player <> 'null'
+	
+	order by b.runs desc
+	limit 10
+),
+
+losing_bowling_performances as (
+    select
+        b.match_number,
+        b.team,
+        b.player,
+        b.wickets,
+        round(b.economy::numeric, 2) as economy,
+        m.winning_team
+    from all_bowling_performances b
+    join valid_matches m
+        on m.match_number = b.match_number
+       and (
+            m.home_team = b.team
+            or m.away_team = b.team
+       )
+    where b.team <> m.winning_team
+      and b.player is not null
+      and b.player <> 'null'
+	
+	order by b.wickets desc
+	limit 10
 )
 
 select
-	team as "Team",
-	opp as "Opponent",
-	batter as "Batter Name",
-	runs as "Highest Runs Scored in Losing Cause",
-	strike_rate as "Batting Strike Rate",
-	bowler as "Bowler Name",
-	wickets as "Wickets Taken in Losing Cause",
-	economy as "Bowling Economy",
-	opp as "Winning Team"
-from combined_losing_cause_performances
-order by "Highest Runs Scored in Losing Cause" desc, "Wickets Taken in Losing Cause" desc
-limit 10
+    'Batting' as "Performance Type",
+    match_number as "Match Number",
+    team as "Team",
+    winning_team as "Winning Team",
+    player as "Player",
+    runs as "Runs",
+    strike_rate as "Strike Rate",
+    null::integer as "Wickets",
+    null::numeric as "Economy"
+from losing_batting_performances
+
+union all
+
+select
+    'Bowling' as "Performance Type",
+    match_number as "Match Number",
+    team as "Team",
+    winning_team as "Winning Team",
+    player as "Player",
+    null::integer as "Runs",
+    null::numeric as "Strike Rate",
+    wickets as "Wickets",
+    economy as "Economy"
+from losing_bowling_performances
+
+order by
+    "Performance Type",
+    "Runs" desc nulls last,
+    "Wickets" desc nulls last
 
 -- 74.1) Top-5 Matches with Highest Win Margin (By Runs)
 
